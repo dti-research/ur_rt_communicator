@@ -17,6 +17,7 @@ logging.basicConfig(format='%(asctime)s %(levelname)s %(message)s',
                     level=logging.DEBUG,
                     stream=sys.stdout)
 
+
 class URCommunicator():
     """URCommunicator class for UR5 robot.
 
@@ -56,7 +57,7 @@ class URCommunicator():
         self._dashboard_sock = URCommunicator.make_connection(
             host=self._host,
             port=ur_utils.DASHBOARD_SERVER_PORT,
-            disable_nagle_algorithm = self._disable_nagle_algorithm
+            disable_nagle_algorithm=self._disable_nagle_algorithm
         )
         time.sleep(0.5)
 
@@ -79,9 +80,11 @@ class URCommunicator():
         """
 
         try:
-            REALTIME_COMM_PACKET = ur_utils.get_rt_packet_def(self._firmware_version)
+            REALTIME_COMM_PACKET = ur_utils.get_rt_packet_def(
+                self._firmware_version)
 
-            data = self._sock.recv(ur_utils.get_rt_packet_size(self._firmware_version))
+            data = self._sock.recv(
+                ur_utils.get_rt_packet_size(self._firmware_version))
             self._recv_time = time.time()  # time after receiving packet
 
             # To fix CB2 issue
@@ -89,7 +92,7 @@ class URCommunicator():
 
             # check and parse received packet
             self.pre_check(data)
-            
+
             parsed = np.frombuffer(data, dtype=REALTIME_COMM_PACKET)
 
             self._prev_recv_time = self._recv_time
@@ -102,14 +105,17 @@ class URCommunicator():
             self._stop = True
             self._sock.close()
             self._dashboard_sock.close()
-            self._sock = self.make_connection(self._host,
-                                              ur_utils.REALTIME_COMM_CLIENT_INTERFACE_PORT,
-                                              disable_nagle_algorithm=self._disable_nagle_algorithm
-                                              )
-            self._dashboard_sock = self.make_connection(self._host,
-                                                        ur_utils.DASHBOARD_SERVER_PORT,
-                                                        disable_nagle_algorithm = self._disable_nagle_algorithm
-                                                        )
+
+            self._sock = self.make_connection(
+                self._host,
+                ur_utils.REALTIME_COMM_CLIENT_INTERFACE_PORT,
+                disable_nagle_algorithm=self._disable_nagle_algorithm)
+
+            self._dashboard_sock = self.make_connection(
+                self._host,
+                ur_utils.DASHBOARD_SERVER_PORT,
+                disable_nagle_algorithm=self._disable_nagle_algorithm)
+
             self._stop = False
         except Exception:
             raise
@@ -121,7 +127,8 @@ class URCommunicator():
             data: a numpy array with sensory information received from UR5
         """
 
-        REALTIME_COMM_PACKET = ur_utils.get_rt_packet_def(self._firmware_version)
+        REALTIME_COMM_PACKET = ur_utils.get_rt_packet_def(
+            self._firmware_version)
 
         if self._recv_time > self._prev_recv_time + 1.1 / 125:
             logging.debug(
@@ -156,7 +163,8 @@ class URCommunicator():
             try:
                 sock = socket.socket(afam, socktype, proto)
                 if disable_nagle_algorithm:
-                    sock.setsockopt(socket.IPPROTO_TCP, socket.TCP_NODELAY, True)
+                    sock.setsockopt(socket.IPPROTO_TCP,
+                                    socket.TCP_NODELAY, True)
             except OSError as msg:
                 logging.debug(msg)
                 sock = None
